@@ -1,6 +1,25 @@
 from . import fernet
 
 
+def format_media_list(medias):
+    lst = []
+    count = 0
+    for m in medias:
+        count += 1
+        lst.append({
+            "sl": count,
+            "name": m.name,
+            "area": m.area.name,
+            "path": m.path,
+            "created_by": m.user.email,
+            "created_at": m.time_created,
+            "updated_at": m.time_updated,
+            "lat": m.lat,
+            "lng": m.long
+        })
+    return lst
+
+
 def format_area_list(areas):
     lst = []
     count = 0

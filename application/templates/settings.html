@@ -90,10 +90,10 @@
         $('#select-area-for-rtsp option[value="' + optiionVal + '"]').attr('selected', 'selected')
     }
 
-    function activateTab(tab, optionVal, modalId, selectId){
+    function activateTab(tab, optionVal, modalId, selectId) {
         $('.nav-tabs #' + tab).tab('show');
         $(modalId).modal('show')
-        $(''+selectId+' option[value="' + optionVal + '"]').attr('selected', 'selected')
+        $('' + selectId + ' option[value="' + optionVal + '"]').attr('selected', 'selected')
 
     }
 
@@ -102,34 +102,64 @@
 
     $(document).ready(function () {
         $("#exampleModal").on('shown.bs.modal', function () {
-            if (map1 == null)
-                map1 = addMap("map1", false, true, function(latlng){
+            if (map1 == null) {
+                let options = {
+                    isSearchable: false,
+                    isAddMarker: true,
+                    icon: rtspIcon,
+                    text: "RTSP Link"
+                }
+                map1 = addMap("map1", options, function (latlng) {
                     $("input[name='rtsp_lat']").val(latlng.lat)
                     $("input[name='rtsp_long']").val(latlng.lng)
                 })
+            }
+
             if (lat && lng) {
                 map1.panTo([lng, lat]);
             }
         });
         $("#exampleModal1").on('shown.bs.modal', function () {
-            if (map2 == null)
-                map2 = addMap("map2", false, true, function(latlng){
-                    $("input[name='video_lat']").val(latlng.lat)
-                    $("input[name='video_long']").val(latlng.lng)
+            if (map2 == null) {
+                let options = {
+                    isSearchable: false,
+                    isAddMarker: true,
+                    icon: vidIcon,
+                    text: "Recorded video"
+                }
+                map2 = addMap("map2", options, function (latlng) {
+                    $("input[name='rtsp_lat']").val(latlng.lat)
+                    $("input[name='rtsp_long']").val(latlng.lng)
                 })
+            }
             if (lat && lng) {
-                map1.panTo([lng, lat]);
+                map2.panTo([lng, lat]);
             }
         });
         $("#exampleModal2").on('shown.bs.modal', function () {
-            if (map3 == null)
-                map3 = addMap("map3", true, false, function (latlng, label) {
+            if (map3 == null) {
+                let options = {
+                    isSearchable: true,
+                    isAddMarker: false
+                }
+                map3 = addMap("map3", options, function (latlng, label) {
                     $("input[name='area_lat']").val(latlng.lat)
                     $("input[name='area_long']").val(latlng.lng)
                     areaName = label.split(",")[0]
                     $("input[name='area_name']").val(areaName)
                     $("input[name='des']").val(label)
                 })
+            }
+        });
+
+        $(".view-area-link").click(function(){
+            let des = $(this).attr('data-des');
+            let lat = $(this).attr('data-lat');
+            let lng = $(this).attr('data-long');
+            let area_id=$(this).attr('rel')
+            $.get('{{ url_for("view.list_cameras") }}?area_id='+area_id, function(data, success){
+                console.log(data)
+            })
         });
 
         $(".add-rtsp-from-area").click(function () {
@@ -149,7 +179,7 @@
                 lat = $(this).attr('data-lat')
                 lng = $(this).attr('data-long')
             });
-            map1.panTo([lng, lat]);
+            pan_map(map1, [lng, lat]);
         });
 
         $("#select-area-for-video").change(function () {
@@ -157,7 +187,7 @@
                 lat = $(this).attr('data-lat')
                 lng = $(this).attr('data-long')
             });
-            map2.panTo([lng, lat]);
+            pan_map(map2, [lng, lat]);
         });
     })
 

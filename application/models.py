@@ -43,6 +43,8 @@ class Media(db.Model):
     lat = db.Column(db.Float, nullable=False)
     long = db.Column(db.Float, nullable=False)
     area_id = db.Column(db.Integer, db.ForeignKey('area.id'), nullable=False)
+    area = db.relationship('Area', back_populates="medias")
+    user = db.relationship('User', back_populates='medias')
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     time_created = db.Column(DateTime(timezone=True), server_default=func.now())
     time_updated = db.Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -118,12 +118,34 @@
 
     $(document).ready(function () {
         $(".toast").toast('show');
-        $('.d-table').DataTable();
-
+        let table = $('.d-table').DataTable();
+        table.columns.adjust().draw();
     });
 
     const myIcon = L.icon({
-        iconUrl: "{{ url_for('static', filename='images/map.png') }}",
+        iconUrl: "{{ url_for('static', filename='images/video.svg') }}",
+        iconSize: [32, 32],
+    });
+
+    const divIcon = new L.DivIcon({
+        className: 'my-div-icon',
+        html: '<img class="my-div-image" src="http://png-3.vector.me/files/images/4/0/402272/aiga_air_transportation_bg_thumb"/>'+
+              '<span class="my-div-span">RAF Banff Airfield</span>'
+    })
+
+    const vidIcon = L.icon({
+        iconUrl: "{{ url_for('static', filename='images/marker_video.png') }}",
+        iconSize: [25, 32],
+    });
+
+      const rtspIcon = L.icon({
+        iconUrl: "{{ url_for('static', filename='images/marker_rtsp.png') }}",
+        iconSize: [25, 32],
+    });
+
+        const clipIcon = L.icon({
+        iconUrl: "{{ url_for('static', filename='images/marker_clip.png') }}",
+        iconSize: [25, 32],
     });
 </script>
 {% block page_script %} {% endblock %}

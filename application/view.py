@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, flash, request, url_for, redirect, session
+from flask import Blueprint, render_template, flash, request, url_for, jsonify, redirect, session
 from flask_login import login_required, current_user
 from .dal import *
 from .viewmodel import *
@@ -21,6 +21,8 @@ def allowed_file(filename):
 @view.route('/')
 @login_required
 def home():
+    #load areas
+    #
     return render_template("home.html", current_user=current_user)
 
 
@@ -32,8 +34,29 @@ def settings():
     tab = session.get('tab')
     if not tab:
         tab = 3
-    return render_template("settings.html", tab=tab, areas=areas)
+    rtsp_models = format_media_list(get_all_media_by_type(StreamType.rtsp))
+    video_models = format_media_list(get_all_media_by_type(StreamType.video))
 
+    return render_template("settings.html", tab=tab, areas=areas, rtsp_models=rtsp_models, video_models=video_models)
+
+
+@view.route('/list-cameras')
+@login_required
+def list_cameras():
+    area_id = request.args.get('area_id')
+    print(area_id)
+    area_id = fernet.decrypt(area_id).decode()
+    area_id = int(area_id)
+    if area_id:
+        medias = get_media_by_area(area_id)
+        medias = format_media_list(medias)
+        return jsonify({
+            'data': medias,
+            'success': True
+        })
+    return jsonify({
+        'success': False
+    })
 
 @view.route('/settings-create-area', methods=['POST'])
 @login_required
@@ -98,11 +121,11 @@ def settings_upload_video():
     if request.method == 'POST':
         error = False
         if 'file' not in request.files:
-            flash('No file is added.')
+            flash('No file is added.', category="error")
             error = True
         file = request.files['file']
         if file.filename == '':
-            flash('No selected file')
+            flash('No selected file', category="error")
             error = True
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -125,7 +148,7 @@ def settings_upload_video():
             if not add_media(video_name, filePath, StreamType.video, area_id, lat, lng):
                 flash("Cannot add rtsp link, already exists or area not found!", category='error')
             else:
-                flash("RTSP Link added successfully!", category='success')
+                flash("Video uploaded successfully!", category='success')
     return redirect(url_for('view.settings'))
 
 

@@ -4,7 +4,7 @@ lstMap = []
 function create_map(id) {
     return L.map(id, {
         center: [23.7696, 90.3576],
-        zoom: 15
+        zoom: 19
     });
 }
 
@@ -16,13 +16,17 @@ function add_tile(map) {
 }
 
 
-function add_marker(map) {
+function add_marker(map, options) {
+
     let marker = L.marker([23.7696, 90.3576], {
-        draggable: true,
+        draggable: false,
         autoPan: true
     })
 
-    marker.addTo(map).bindPopup('Map for RTSP');
+    if (options.icon) {
+        marker.setIcon(options.icon);
+    }
+
     return marker
 }
 
@@ -34,10 +38,9 @@ function add_search(map) {
         style: 'button',
         showMarker: true,
         showPopup: true,
-        marker: new L.marker({draggable: true}),
+        marker: new L.marker({draggable: true, autoPan: true}),
         updateMap: true,
         autoClose: false
-
     });
     map.addControl(search)
 }
@@ -45,35 +48,55 @@ function add_search(map) {
 
 function execute_call_back(target, latlng, desc) {
     lstMap.every(function (val) {
-        if (val.id == target.id && val.fnc) {
-            fnc = val.fnc
-            fnc(latlng, desc)
-            return false
+        if (val.id == target.id) {
+            if(!val.noMarkerOption){
+
+                val.marker.addTo(val.map).bindPopup(val.text);
+                //val.marker.setIcon(val.icon)
+            }
+            if(val.marker) {
+                val.marker.setLatLng(latlng);
+            }
+            if (val.fnc) {
+                let fnc = val.fnc
+                fnc(latlng, desc)
+            }
+            return false;
         }
         return true
     })
 }
 
 
-function addMarker(e) {
-    marker.setLatLng(e.latlng)
+function updateMarker(e) {
     execute_call_back(e.sourceTarget._container, e.latlng);
 }
 
 function location_update(e) {
-    marker._popup.setContent(e.location.label)
-    execute_call_back(e.sourceTarget._container, {lat:e.location.x, lng: e.location.y}, e.location.label);
+    let lab = e.location.label;
+    execute_call_back(e.sourceTarget._container, {lat: e.location.x, lng: e.location.y}, lab);
 }
 
-function addMap(map_id, isSearchable, isAddMarker, fnc) {
-    map = create_map(map_id);
+function pan_map(map, latlng) {
+    map.panTo(latlng);
+}
+
+function addMap(map_id, options, fnc) {
+    let map = create_map(map_id)
     add_tile(map);
-    marker = add_marker(map);
-    if (isSearchable)
-        add_search(map)
-    map.on('geosearch/showlocation', location_update);
-    if (isAddMarker)
-        map.on('click', addMarker);
+    let marker = null
+    let noMarkerOption = true
+    if(options.icon) {
+        marker = add_marker(map, options);
+        noMarkerOption = false
+    }
+    if (options.isSearchable) {
+        add_search(map);
+        map.on('geosearch/showlocation', location_update);
+    }
+    if (options.isAddMarker) {
+        map.on('click', updateMarker);
+    }
     setTimeout(function () {
         map.invalidateSize(true);
     }, 10);
@@ -81,7 +104,10 @@ function addMap(map_id, isSearchable, isAddMarker, fnc) {
     lstMap.push({
         map: map,
         id: map_id,
-        fnc: fnc
+        fnc: fnc,
+        marker: marker,
+        text: options.text,
+        noMarkerOption: noMarkerOption
     })
 
     return map

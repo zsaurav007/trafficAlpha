@@ -24,16 +24,21 @@
             <th class="text-end">Action</th>
             </thead>
             <tbody>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
+            {% for item in video_models %}
+            <tr>
+            <td>{{ item.sl }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.area }}</td>
+            <td>{{ item.created_by }}</td>
+            <td>{{ item.created_at }}</td>
+            <td>{{ item.updated_at }}</td>
             <td class="text-end ">
                 <a href="#" class="btn btn-sm text-success"><i class="bi bi-play-circle"></i></a>
                 <a href="#" class="btn btn-sm"><i class="bi bi-trash"></i></a>
             </td>
+            </tr>
+            </tbody>
+            {% endfor %}
             </tbody>
         </table>
     </div>

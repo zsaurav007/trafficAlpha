@@ -8,7 +8,8 @@ from cryptography.fernet import Fernet
 import base64
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-password = b"password"
+
+password = b"malihamitu"
 salt = os.urandom(16)
 
 db = SQLAlchemy()
@@ -27,20 +28,15 @@ kdf = PBKDF2HMAC(
 key = base64.urlsafe_b64encode(kdf.derive(password))
 fernet = Fernet(key)
 
-token = fernet.encrypt(b'sadot')
-print(token)
-print(fernet.decrypt(token))
 
-def create_database(app, drop=False):
-    if drop:
-        with app.app_context():
-            print("droped database")
+
+def create_database(app, drop=False, create=False):
+    with app.app_context():
+        if drop:
             db.drop_all()
-
-    if not path.exists('application/' + DB_NAME):
-        with app.app_context():
+        if create:
             db.create_all()
-            print("created database")
+        db.create_all()
 
 
 def create_folders():
@@ -72,7 +68,7 @@ def create_app():
     db.init_app(app)
 
     from .models import User
-    create_database(app, True)
+    create_database(app, False, False)
 
     # register login models and intialize Login Manager
     login_manager = LoginManager()
