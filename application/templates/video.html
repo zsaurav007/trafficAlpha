@@ -5,13 +5,96 @@
     <i class="bi bi-{{  vars['page-icon'] }}"></i>
     {{ vars['current-page'] }}
     {% if media %}
-    {{ media_name }} <span>of {{ area_name }}</span>
+    {{ media.name }} <span>of {{ media.area }}</span>
     {% endif %}
 </h5>
 {% endblock %}
 {% block content %}
 {% if media  %}
-Media to play
+<div class="row">
+    <div class="col-9">
+        <div class="card">
+            <div class="card-body">
+                <img style="width: 100%;" class="p-1 img img-fluid"
+                     src="{{ url_for('video.video_feed') }}?vid={{ media.id }}">
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="bike-card vehi-card card">
+                    <div class="card-body d-flex flex-column fs-4">
+                        <h6>Vehicles</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item rounded-0">
+                                <div class="row justify-content-between align-items-center">
+                                    <div class="col"><i class="bi bi-bicycle"></i></div>
+                                    <div class="col text-end" id="bike-count"></div>
+                                    <div class="col text-end vehi-label text-primary fst-italic fs-6">Bike (s)</div>
+                                </div>
+                            </li>
+                            <li class="list-group-item rounded-0">
+                                <div class="row justify-content-between align-items-center">
+                                    <div class="col"><i class="bi bi-ev-front"></i></div>
+                                    <div class="col text-end" id="light-count"></div>
+                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Light (s)</div>
+                                </div>
+                            </li>
+                            <li class="list-group-item rounded-0">
+                                <div class="row justify-content-between align-items-center">
+                                    <div class="col"><i class="bi bi-truck-front"></i></div>
+                                    <div class="col text-end" id="median-count"></div>
+                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Medium (s)</div>
+                                </div>
+                            </li>
+                            <li class="list-group-item rounded-0">
+                                <div class="row justify-content-between align-items-center">
+                                    <div class="col"><i class="bi bi-bus-front"></i></div>
+                                    <div class="col text-end" id="heavy-count"></div>
+                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Heavies (s)</div>
+                                </div>
+                            </li>
+                            <li class="list-group-item rounded-0 ">
+                                <div class="row justify-content-between align-items-center">
+                                    <div class="col"><i class="bi bi-speedometer"></i></div>
+                                    <div class="col text-end" id="avg-speed"></div>
+                                    <div class="col text-end vehi-label text-primary fst-italic fs-6">Km/Hr</div>
+                                </div>
+                            </li>
+                            <li class="list-group-item rounded-0">
+                                <div class="row justify-content-between align-items-center">
+                                    <div class="col"><i class="bi bi-sign-stop"></i></div>
+                                    <div class="col text-end" id="stationary"></div>
+                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Stationary (s)</div>
+                                </div>
+                            </li>
+                        </ul>
+                        <h6>Prediction</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
+                                <i class="bi bi-info-circle"></i>
+                                <span id="incident-prob">10</span>
+                            </li>
+                            <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
+                                <i class="bi bi-exclamation-diamond"></i>
+                                <span id="accident-prob">10</span>
+                            </li>
+                            <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
+                                <i class="bi bi-cpu"></i>
+                                <span id="prediction">10</span>
+                            </li>
+                        </ul>
+                        <div class="chart d-flex" style="flex: 1">
+                            <canvas id="myChart" style="flex:1; height: 100% !important;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% else %}
 <div class="row">
     <div class="col d-flex justify-content-center align-items-center" style="height: 100vh">
@@ -24,5 +107,91 @@ Media to play
         </div>
     </div>
 </div>
+{% endif %}
+{% endblock %}
+{% block page_script %}
+{% if media %}
+<script type="text/javascript">
+    let incident_data = 0
+    let accident_data = 0
+    $(document).ready(function () {
+        let iv = setInterval(function () {
+            $.get("{{ url_for('video.analytics_data') }}?vid={{media.id}}", function (data, status) {
+                if (status == 'success') {
+                    incident_data = data['incident_prob']
+                    accident_data = data['accident_prob']
+                    $("#bike-count").text(data['bike'])
+                    $("#light-count").text(data['light'])
+                    $("#median-count").text(data['medium'])
+                    $("#heavy-count").text(data['heavy'])
+                    $("#avg-speed").text(Math.round(data['avg_speed'], 2))
+                    $("#stationary").text(data['stationary_object'])
+                    $("#incident-prob").text(data['incident_prob'] + " %")
+                    $("#accident-prob").text(data['accident_prob']+ " %")
+                    if (data['incident_prob'] > 50)
+                        $("#prediction").html("<span class='text-danger'>Not Safe</span>")
+                    else
+                        $("#prediction").html("<span class='text-success'>Safe</span>")
+                }
+            });
+        }, 2000);
+
+        const ctx = document.getElementById('myChart');
+        Chart.defaults.set('plugins.streaming', {
+            duration: 20000
+        });
+
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            responsive: true,// 'line', 'bar', 'bubble' and 'scatter' types are supported
+            maintainAspectRatio: false,
+            data: {
+                datasets: [{
+                    label: 'Incident Probabilities',
+                    borderColor: 'blue',
+                    data: []              // empty at the beginning
+                }, {
+                    label: 'Accident Probabilities',
+                    borderColor: 'red',
+                    data: []              // empty at the beginning
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100
+                    },
+                    x: {
+                        type: 'realtime',   // x axis will auto-scroll from right to left
+                        realtime: {         // per-axis options
+                            duration: 20000,  // data in the past 20000 ms will be displayed
+                            refresh: 1000,    // onRefresh callback will be called every 1000 ms
+                            delay: 1000,      // delay of 1000 ms, so upcoming values are known before plotting a line
+                            pause: false,     // chart is not paused
+                            ttl: undefined,   // data will be automatically deleted as it disappears off the chart
+                            frameRate: 1,    // data points are drawn 30 times every second
+
+                            // a callback to update datasets
+                            onRefresh: chart => {
+                                let data = incident_data;
+                                chart.data.datasets[0].data.push({
+                                    x: Date.now(),
+                                    y: data
+                                });
+                                data = accident_data;
+                                chart.data.datasets[1].data.push({
+                                    x: Date.now(),
+                                    y: data
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    });
+</script>
 {% endif %}
 {% endblock %}

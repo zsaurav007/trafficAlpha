@@ -101,6 +101,11 @@
     let lng = null
 
     $(document).ready(function () {
+
+        $('#area-table').DataTable()
+        $('#video-table').DataTable()
+        $('#rtsp-table').DataTable()
+
         $("#exampleModal").on('shown.bs.modal', function () {
             if (map1 == null) {
                 let options = {

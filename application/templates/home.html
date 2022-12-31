@@ -62,7 +62,7 @@ Home
     let drawMap = false
 </script>
 {% endif %}
-<section id="area-table">
+<section id="area-table-list">
     <div class="row">
         <div class="col">
             <div class="card">
@@ -111,6 +111,11 @@ Home
                 }
             })
         });
+
+        console.log($('#area-table'))
+
+        if($('#area-table'))
+            $('#area-table').DataTable({scrollX: true})
     });
 </script>
 {% endblock %}

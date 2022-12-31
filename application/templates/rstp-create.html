@@ -14,30 +14,30 @@
     </div>
     <div class="card-body">
 
-        <table class="table d-table" id="rtsp-table">
+        <table class="table d-table table-sm fs-6 table-responsive" id="rtsp-table">
             <thead>
             <th>#</th>
-            <th>Link Name</th>
+            <th class="text-truncate">Link Name</th>
             <th>Path</th>
             <th>Area</th>
-            <th>Created By</th>
-            <th>Created At</th>
-            <th>Updated At</th>
-            <th class="text-end">Action</th>
+            <th class="text-truncate">Created By</th>
+            <th class="text-truncate">Created At</th>
+            <th class="text-truncate">Updated At</th>
+            <th class="text-center">Action</th>
             </thead>
             <tbody>
             {% for item in rtsp_models %}
             <tr>
-            <td>{{ item.sl }}</td>
-            <td>{{ item.name }}</td>
+            <td class="text-truncate">{{ item.sl }}</td>
+            <td class="text-truncate">{{ item.name }}</td>
             <td class="text-truncate">{{ item.path[0:30] }}</td>
-            <td>{{ item.area }}</td>
-            <td>{{ item.create_by }}</td>
-            <td>{{ item.created_at }}</td>
-            <td>{{ item.updated_at }}</td>
-            <td class="text-end ">
-                <a href="#" class="btn btn-sm text-success"><i class="bi bi-play-circle"></i></a>
-                <a href="#" class="btn btn-sm"><i class="bi bi-trash"></i></a>
+            <td class="text-truncate">{{ item.area }}</td>
+            <td class="text-truncate">{{ item.create_by }}</td>
+            <td class="text-truncate">{{ item.created_at }}</td>
+            <td class="text-truncate">{{ item.updated_at }}</td>
+            <td class="text-center ">
+                <a href="{{ url_for('video.play_video') }}?vid={{ item.id }}" class="text-success"><i class="bi bi-play-circle"></i></a>
+                <a href="#" class="text-danger"><i class="bi bi-trash"></i></a>
             </td>
             </tr>
             </tbody>

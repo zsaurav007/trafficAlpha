@@ -155,3 +155,11 @@ section {
 .geosearch form{
     min-height: 30px;
 }
+
+#myChart{
+    height: 100% !important;
+}
+
+.vehi-label{
+
+}

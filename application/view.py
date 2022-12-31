@@ -37,7 +37,7 @@ def settings():
     areas, selected_area = format_area_list(area_models)
     tab = session.get('tab')
     if not tab:
-        tab = 3
+        tab = 2
     rtsp_models = format_media_list(get_all_media_by_type(StreamType.rtsp))
     video_models = format_media_list(get_all_media_by_type(StreamType.video))
 
