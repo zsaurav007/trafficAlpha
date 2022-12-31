@@ -4,6 +4,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_navigation import Navigation
 from flask_login import LoginManager
 from os import path
+from cryptography.fernet import Fernet
+import base64
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+password = b"password"
+salt = os.urandom(16)
 
 db = SQLAlchemy()
 DB_NAME = "traffic.db"
@@ -12,6 +18,18 @@ CLIP_FOLDER = './clips'
 RECORDS_FOLDER = "./records"
 SECRET_KEY = "The World is not Enough"
 
+kdf = PBKDF2HMAC(
+    algorithm=hashes.SHA256(),
+    length=32,
+    salt=salt,
+    iterations=480000,
+)
+key = base64.urlsafe_b64encode(kdf.derive(password))
+fernet = Fernet(key)
+
+token = fernet.encrypt(b'sadot')
+print(token)
+print(fernet.decrypt(token))
 
 def create_database(app, drop=False):
     if drop:

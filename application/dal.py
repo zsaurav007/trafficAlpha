@@ -17,7 +17,8 @@ def get_media_by_id(media_id):
 
 
 def get_all_areas():
-    return Area.query.all().order_by(Area.time_updated.desc())
+    return db.session.query(Area, User).filter(User.id == Area.user_id).order_by(Area.time_updated.desc()).all()
+    # return Area.query.order_by(Area.time_updated.desc()).all()
 
 
 def get_all_media_by_type(media_type):
@@ -38,27 +39,31 @@ def add_user(email, password):
     return result
 
 
-def add_area(name):
+def add_area(name, description, lat, long):
     result = False
     name = name.strip()
     area = Area.query.filter(func.lower(Area.name) == func.lower(name)).first()
     if not area:
-        area = Area(name=name, user_id=current_user.id)
+        area = Area(name=name, description=description, user_id=current_user.id, lat=lat, long=long)
         db.session.add(area)
         db.session.commit()
         result = True
     return result
 
 
-def add_media(name, path, media_type, area_id):
+def add_media(name, path, media_type, area_id, lat, long):
     result = False
     name = name.strip()
     path = path.strip()
     media = Media.query.filter(func.lower(Media.path) == func.lower(path)).first()
     area = get_area_by_id(area_id)
-    if (not media) and (not area):
-        media = Media(name=name, path=path, media_type=media_type, area_id=area_id, user_id=current_user.id)
-        db.session.add(media)
-        db.session.commit()
-        result = True
+    if media is None and area is not None:
+        media = Media(name=name, path=path, media_type=media_type, area_id=area_id, user_id=current_user.id, lat=lat,
+                      long=long)
+        try:
+            db.session.add(media)
+            db.session.commit()
+            result = True
+        except:
+            db.session.rollback()
     return result

@@ -1,10 +1,32 @@
 {% macro text_field(id, extra_cls, label, type, ph, name) %}
 <label for="{{ id }}" class="form-label">{{ label }}</label>
 <input type="{{ type }}" name="{{ name }}" class="form-control {{ extra_cls }}" id="{{ id }}"
-       placeholder="{{ ph }}">
+       placeholder="{{ ph }}" required>
 {% endmacro %}
 
 
 {% macro no_label_text_field(field_id, extra_cls, label, type, ph, name) %}
  <input id="{{ field_id }}" name="{{ name }}"  type="{{ type }}" class="form-control {{ extra_cls }}" placeholder="{{ ph }}" aria-label="{{ ph }}">
+{% endmacro %}
+
+
+{% macro select_field(select_field_id, extra_cls, label, name, options) %}
+<label for="{{ select_field_id }}" class="form-label">{{ label }}</label>
+<select id="{{ select_field_id }}" class="form-select" aria-label="{{ label }}" name="{{ name }}" required>
+ <option selected>Select a area</option>
+ {% for item in options %}
+  <option value="{{item['id']}}">{{item['name']}}</option>
+ {% endfor %}
+</select>
+{% endmacro %}
+
+
+{% macro select_field_area(select_field_id1, extra_cls, label, name, options) %}
+<label for="{{ select_field_id1 }}" class="form-label">{{ label }}</label>
+<select id="{{ select_field_id1 }}" class="form-select" aria-label="{{ label }}" name="{{ name }}" required>
+ <option selected>Select a area</option>
+ {% for item in options %}
+  <option value="{{item['id']}}" data-lat="{{item.lat}}" data-long="{{item.lng}}">{{item['name']}}</option>
+ {% endfor %}
+</select>
 {% endmacro %}

@@ -26,6 +26,9 @@ class User(db.Model, UserMixin):
 class Area(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False, unique=True)
+    description = db.Column(db.String(300), nullable=False)
+    lat = db.Column(db.Float, nullable=False)
+    long = db.Column(db.Float, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     medias = db.relationship('Media')
     time_created = db.Column(DateTime(timezone=True), server_default=func.now())
@@ -37,6 +40,8 @@ class Media(db.Model):
     name = db.Column(db.String(150), nullable=False)
     path = db.Column(db.String(1000), nullable=False, unique=True)
     media_type = db.Column(Enum(StreamType))
+    lat = db.Column(db.Float, nullable=False)
+    long = db.Column(db.Float, nullable=False)
     area_id = db.Column(db.Integer, db.ForeignKey('area.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     time_created = db.Column(DateTime(timezone=True), server_default=func.now())

@@ -1,6 +1,76 @@
-{% from 'form-macro.html' import no_label_text_field %}
+{% from 'form-macro.html' import text_field, select_field_area %}
 
+<div class="card rounded-0">
+    <div class="card-header d-flex">
+        <div class="flex-fill">
+            <i class="bi bi-webcam"></i>
+            <strong class="me-auto">&nbsp; RTSP Links</strong>
+        </div>
+        <div class="d-grid gap-2 d-flex justify-content-end">
+            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#exampleModal"><i
+                    class="bi bi-plus-lg"></i></button>
+        </div>
 
+    </div>
+    <div class="card-body">
 
-{{ no_label_text_field("login_emil", "", "Email Address", "email", "Your Registered Email Address",
-        "email") }}
+        <table class="table d-table" id="rtsp-table">
+            <thead>
+            <th>#</th>
+            <th>Link Name</th>
+            <th>Path</th>
+            <th>Area</th>
+            <th>Created By</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+            <th class="text-end">Action</th>
+            </thead>
+            <tbody>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td class="text-end ">
+                <a href="#" class="btn btn-sm text-success"><i class="bi bi-play-circle"></i></a>
+                <a href="#" class="btn btn-sm"><i class="bi bi-trash"></i></a>
+            </td>
+            </tbody>
+        </table>
+    </div>
+</div>
+<form method="post" action="{{ url_for('view.settings_create_rtsp_link') }}">
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-webcam"></i> Add a new RTSP Link</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {{ text_field("add_rtsp_link_name", "", "Name", "text", "", "rtsp_name") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ text_field("add_rtsp_link_path", "", "URL", "text", "", "rtsp_link") }}
+                    </div>
+                    <div class="mb-3">
+                         <label class="form-label" for="map1">Select Location of the link (please click on map)</label>
+                        <div id="map1" class="map"></div>
+                        <input type="hidden" name="rtsp_lat">
+                        <input type="hidden" name="rtsp_long">
+                    </div>
+                    <div class="mb-3">
+                        {{ select_field_area("select-area-for-rtsp", "", "Select Area", "area_id", areas ) }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

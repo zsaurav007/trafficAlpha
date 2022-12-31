@@ -1,1 +1,75 @@
-Hello Video
+{% from 'form-macro.html' import text_field, select_field_area %}
+
+<div class="card rounded-0">
+    <div class="card-header d-flex">
+        <div class="flex-fill">
+            <i class="bi bi-camera-reels"></i>
+            <strong class="me-auto">&nbsp; Uploaded Videos</strong>
+        </div>
+        <div class="d-grid gap-2 d-flex justify-content-end">
+            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#exampleModal1"><i
+                    class="bi bi-plus-lg"></i></button>
+        </div>
+
+    </div>
+    <div class="card-body">
+        <table class="table d-table" id="rtsp-table">
+            <thead>
+            <th>#</th>
+            <th>Video Name</th>
+            <th>Area</th>
+            <th>Created By</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+            <th class="text-end">Action</th>
+            </thead>
+            <tbody>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td class="text-end ">
+                <a href="#" class="btn btn-sm text-success"><i class="bi bi-play-circle"></i></a>
+                <a href="#" class="btn btn-sm"><i class="bi bi-trash"></i></a>
+            </td>
+            </tbody>
+        </table>
+    </div>
+</div>
+<form method="post" action="{{ url_for('view.settings_upload_video') }}" enctype=multipart/form-data>
+    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel1"><i class="bi bi-cloud-arrow-up"></i> Upload a video
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {{ text_field("add_video_name", "", "Name", "text", "", "video_name") }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="inputGroupFile02">Upload a video file (<i class="bi bi-filetype-mp4"></i>)</label>
+                        <input type="file" name="file" class="form-control" id="inputGroupFile02">
+                    </div>
+                    <div class="mb-3">
+                         <label class="form-label" for="map2">Select Location of the video (please click on map)</label>
+                        <div id="map2" class="map"></div>
+                        <input type="hidden" name="video_lat">
+                        <input type="hidden" name="video_long">
+                    </div>
+                    <div class="mb-3">
+                       {{ select_field_area("select-area-for-video", "", "Select Area", "area_id", areas ) }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
