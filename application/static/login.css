@@ -1,0 +1,41 @@
+html {
+  background-color: #56baed;
+}
+
+body {
+  height: 100vh;
+  font-family: "Trirong", serif;
+}
+
+h3 {
+  font-family: "Audiowide", sans-serif;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display:inline-block;
+  margin: 16px 8px 10px 8px;
+  color: #cccccc;
+  width: 100%;
+}
+
+h3 span{
+  text-transform: none;
+}
+
+.form-control::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+            color: #cccccc;
+            opacity: 1; /* Firefox */
+}
+
+.form-control:-ms-input-placeholder { /* Internet Explorer 10-11 */
+            color: #cccccc;
+}
+
+.form-control::-ms-input-placeholder { /* Microsoft Edge */
+            color: #cccccc;
+ }
+
+.card{
+  min-width: 400px;
+}

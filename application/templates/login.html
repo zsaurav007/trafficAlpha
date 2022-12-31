@@ -1,0 +1,19 @@
+{% extends "userbase.html" %} {% block title %}Home{% endblock %}
+{% block content %}
+<div class="card-image text-center">
+    <img src="{{url_for('static', filename='images/login.png')}}" class="img img-fluid" style="width: 300px"/>
+</div>
+<h3 class="card-title text-center">Please Login</h3>
+<form method="post">
+    <div class="mb-3">
+        {{ text_field("login_emil", "", "Email Address", "email", "Your Registered Email Address",
+        "email") }}
+    </div>
+    <div class="mb-3">
+        {{ text_field("login_pass", "", "Password", "password", "Your password", "password") }}
+    </div>
+    <div class="mb-3 text-end">
+        <button type="submit" class="btn btn-secondary">Login</button>
+    </div>
+</form>
+{% endblock %}
