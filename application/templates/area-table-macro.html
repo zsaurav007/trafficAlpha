@@ -1,0 +1,51 @@
+{% macro area_table(areas, is_op) %}
+<table class="table d-table" id="rtsp-table">
+    <thead>
+    <th>#</th>
+    <th>Name</th>
+    <th>Description</th>
+    <th>RTSP Count</th>
+    <th>Video Count</th>
+    <th>Clip Count</th>
+    <th>Created By</th>
+    <th>Created At</th>
+    <th>Updated At</th>
+    <th class="text-end">Action</th>
+    </thead>
+    <tbody>
+    {% for item in areas %}
+    <tr>
+        <td>{{ item.sl }}</td>
+        <td>{{ item.name }}</td>
+        <td class="text-truncate" data-bs-toggle="tooltip" data-bs-placement="top"
+            title="{{ item.description }}">{{ item.description[0:50] }}...
+        </td>
+        <td>{{ item.rtsp_count }}</td>
+        <td>{{ item.video_count }}</td>
+        <td>{{ item.clip_count }}</td>
+        <td>{{ item.created_by }}</td>
+        <td>{{ item.created_at }}</td>
+        <td>{{ item.updated_at }}</td>
+
+        <td class="text-end ">
+            <a class="view-area-link" data-des={{item.description}} data-long="{{ item.lng }}"
+               data-lat="{{ item.lat }}" rel="{{ item.id }}"><i class="bi bi-eye"></i></a>
+            {% if is_op %}
+            <btn class="add-rtsp-from-area text-success" data-long="{{ item.lng }}" data-lat="{{ item.lat }}"
+                 rel="{{ item.id }}">
+                <i data-bs-toggle="tooltip" data-bs-placement="top" title="Add RTSP" class="bi bi-webcam"></i>
+            </btn>
+            <btn class="add-video-from-area text-success" data-long="{{ item.lng }}" data-lat="{{ item.lat }}"
+                 rel="{{ item.id }}">
+                <i data-bs-toggle="tooltip" data-bs-placement="top" title="Add Video"
+                   class="bi bi-camera-reels"></i>
+            </btn>
+            <a class="text-danger"><i class="bi bi-trash"></i></a>
+            {% endif %}
+        </td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}

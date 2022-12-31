@@ -153,12 +153,11 @@
         });
 
         $(".view-area-link").click(function(){
-            let des = $(this).attr('data-des');
-            let lat = $(this).attr('data-lat');
-            let lng = $(this).attr('data-long');
-            let area_id=$(this).attr('rel')
-            $.get('{{ url_for("view.list_cameras") }}?area_id='+area_id, function(data, success){
-                console.log(data)
+            let area_id = $(this).attr('rel');
+            $.get("{{ url_for('view.current_area') }}?area_id=" + area_id, function (data, status) {
+                if (status == 'success') {
+                    window.location = '{{ url_for("view.home") }}'
+                }
             })
         });
 

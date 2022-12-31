@@ -1,8 +1,28 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %}
+{% extends "base.html" %} {% block title %}{{  page_type }}{% endblock %}
 {% block pagetitle %} {{  page_type }} {% endblock %}
 {% block pagehead %}
-<h5><i class="bi bi-{{  vars['page-icon'] }}"></i> {{ media_name }} <span>of {{ area_name }}</span></h5>
+<h5>
+    <i class="bi bi-{{  vars['page-icon'] }}"></i>
+    {{ vars['current-page'] }}
+    {% if media %}
+    {{ media_name }} <span>of {{ area_name }}</span>
+    {% endif %}
+</h5>
 {% endblock %}
 {% block content %}
-video content will go ghere..
+{% if media  %}
+Media to play
+{% else %}
+<div class="row">
+    <div class="col d-flex justify-content-center align-items-center" style="height: 100vh">
+        <div class="card alert alert-warning" style="height: 200px;">
+            <div class="card-body d-flex align-items-center flex-column justify-content-center">
+                <h2>We cannot determine which media to play.</h2>
+                <br/>
+                <div>Contact<a href="mailto:muliha@gmail.com"> Muliha Mutu</a> for more informatoin.</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

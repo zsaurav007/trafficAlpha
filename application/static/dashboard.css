@@ -60,7 +60,7 @@ section {
 
 .main {
     padding: 1rem;
-    padding-left: 0px;
+    padding-left: 70px;
     padding-top: 60px;
 }
 
@@ -70,6 +70,11 @@ section {
 
 .main .row .card {
     height: 100%;
+}
+
+.home-area-media-list.card{
+    flex: 1;
+    height: auto !important;
 }
 
 .card {
@@ -141,6 +146,10 @@ section {
     height: 200px;
     width: 100%;
     max-height: 100%;
+}
+
+.home-area-map .leaflet-container {
+    height: 400px;
 }
 
 .geosearch form{

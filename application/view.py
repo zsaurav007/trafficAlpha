@@ -6,10 +6,7 @@ from werkzeug.utils import secure_filename
 from . import UPLOAD_FOLDER, fernet
 import os
 
-
-
 view = Blueprint('view', __name__)
-
 
 ALLOWED_EXTENSIONS = {'mp4'}
 
@@ -18,19 +15,26 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+def decode_int(val):
+    return int(fernet.decrypt(val).decode())
+
+
 @view.route('/')
 @login_required
 def home():
-    #load areas
-    #
-    return render_template("home.html", current_user=current_user)
+    area_models = get_all_areas()
+    current_area_id = session.get('current_area')
+    areas, selected_area = format_area_list(area_models, current_area_id)
+
+    return render_template("home.html", current_user=current_user, areas=areas, selected_area=selected_area)
 
 
 @view.route('/settings', methods=['GET'])
 @login_required
 def settings():
     area_models = get_all_areas()
-    areas = format_area_list(area_models)
+    areas, selected_area = format_area_list(area_models)
     tab = session.get('tab')
     if not tab:
         tab = 3
@@ -40,13 +44,19 @@ def settings():
     return render_template("settings.html", tab=tab, areas=areas, rtsp_models=rtsp_models, video_models=video_models)
 
 
+@view.route('/current-area')
+@login_required
+def current_area():
+    area_id = decode_int(request.args.get('area_id'))
+    session['current_area'] = area_id
+    return jsonify({'success': True})
+
+
 @view.route('/list-cameras')
 @login_required
 def list_cameras():
-    area_id = request.args.get('area_id')
-    print(area_id)
-    area_id = fernet.decrypt(area_id).decode()
-    area_id = int(area_id)
+    area_id = decode_int(request.args.get('area_id'))
+
     if area_id:
         medias = get_media_by_area(area_id)
         medias = format_media_list(medias)
@@ -57,6 +67,7 @@ def list_cameras():
     return jsonify({
         'success': False
     })
+
 
 @view.route('/settings-create-area', methods=['POST'])
 @login_required
@@ -90,9 +101,7 @@ def settings_create_rtsp_link():
     if request.method == 'POST':
         rtsp_link = request.form['rtsp_link'].strip()
         rtsp_link_name = request.form['rtsp_name'].strip()
-        area_id = request.form['area_id']
-        area_id = fernet.decrypt(area_id).decode()
-        area_id = int(area_id)
+        area_id = decode_int(request.form['area_id'])
         lat = request.form['rtsp_lat'].strip()
         lng = request.form['rtsp_long'].strip()
         error = False
@@ -132,9 +141,7 @@ def settings_upload_video():
             filePath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filePath)
         video_name = request.form['video_name'].strip()
-        area_id = request.form['area_id']
-        area_id = fernet.decrypt(area_id).decode()
-        area_id = int(area_id)
+        area_id = decode_int(request.form['area_id'])
         lat = request.form['video_lat'].strip()
         lng = request.form['video_long'].strip()
         if len(lat) == 0:
@@ -150,21 +157,3 @@ def settings_upload_video():
             else:
                 flash("Video uploaded successfully!", category='success')
     return redirect(url_for('view.settings'))
-
-
-@view.route('/analytics', methods=['GET'])
-@login_required
-def analytics():
-    return render_template("video.html", page_type="Analytics", media_name="Dummy Video", area_name="Dhaka")
-
-
-@view.route('/clips', methods=['GET'])
-@login_required
-def clips():
-    return render_template("video.html", page_type="Recorded Clips", media_name="Dummy Clip", area_name="Dhaka")
-
-
-@view.route('/live', methods=['GET'])
-@login_required
-def video():
-    return render_template("video.html", page_type="Live", media_name="Dummy Live", area_name="Dhaka")

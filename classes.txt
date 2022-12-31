@@ -1,0 +1,8 @@
+bike
+riksha
+medium
+heavy
+light
+cicle
+van
+people

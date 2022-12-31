@@ -1,6 +1,116 @@
+{% from 'area-table-macro.html' import area_table %}
 {% extends "base.html" %} {% block title %}Home{% endblock %}
-{% block pagetitle %} Home {% endblock %}
-{% block pagehead %} <h5><i class="bi bi-{{  vars['page-icon'] }}"></i> Home</h5> {% endblock %}
+{% block pagetitle %}
+Home
+
+{% endblock %}
+{% block pagehead %}
+<h5><i class="bi bi-{{  vars['page-icon'] }}"></i> Home
+    {% if selected_area is not none %}
+- {{ selected_area.name }}
+{% endif %}
+</h5>
+{% endblock %}
 {% block content %}
-Content will go here..
+{% if selected_area is not none %}
+<section id="map-section">
+    <div class="row">
+        <div class="col-9">
+            <div class="card p-1 home-area-map">
+                <div id="map"></div>
+            </div>
+        </div>
+        <div class="col-3 d-flex flex-column">
+            <div class="card p-1 mb-1 home-area-media-list">
+                <div class="card-body">
+                    <h6>RTSP Link</h6>
+                    <ul class="list-group">
+                        {% for item in selected_area.rtsp_links %}
+                        <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
+                            {{ item.name }}
+                            <a href="link" class="text-end flex-end"><i class="bi bi-webcam"></i></a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card p-1 home-area-media-list">
+                <div class="card-body">
+                    <h6>Videos</h6>
+                    <ul class="list-group">
+                        {% for item in selected_area.videos %}
+                        <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
+                            {{ item.name }}
+                            <a href="link" class="text-end flex-video"><i class="bi bi-file-earmark-play"></i></a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    let drawMap = true
+    let lat = '{{ selected_area.lat }}'
+    let lng = '{{ selected_area.lng }}'
+    let area_videos = '{{ selected_area.videos|tojson }}'
+    let area_rtsp_links = '{{ selected_area.rtsp_links|tojson }}'
+</script>
+{% else %}
+<script type="text/javascript">
+    let drawMap = false
+</script>
+{% endif %}
+<section id="area-table">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex">
+                    <div class="flex-fill">
+                        <i class="bi bi-geo-alt"></i>
+                        <strong class="me-auto">&nbsp; Available Areas</strong>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{ area_table(areas, false) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block page_script %}
+<script type="text/javascript">
+
+    let map = null;
+
+    $(document).ready(function () {
+        if (drawMap)
+            if (map == null) {
+                let options = {
+                    isSearchable: false,
+                    isAddMarker: false,
+                    cord: [lng, lat],
+                    area_videos: area_videos,
+                    area_video_icon: vidIcon,
+                    area_rtsp_links: area_rtsp_links,
+                    area_rtsp_icon: rtspIcon,
+                    media: true
+                }
+                console.log(options)
+                map = addMap("map", options);
+            }
+
+
+        $(".view-area-link").click(function () {
+            let area_id = $(this).attr('rel');
+            $.get("{{ url_for('view.current_area') }}?area_id=" + area_id, function (data, status) {
+                if (status == 'success') {
+                    window.location = window.location
+                }
+            })
+        });
+    });
+</script>
 {% endblock %}

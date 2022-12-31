@@ -1,7 +1,7 @@
 <!DOCTYPE>
 <html>
 <head>
-    {% set vars = { 'page-icon': none } %}
+    {% set vars = { 'page-icon': none, 'current-page': none } %}
     <meta charset="UTF-8"/>
     <title>iTraffic - {% block pagetitle %} {% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
@@ -44,9 +44,9 @@
     </div>
 </nav>
 <!-- End Top Nav   -->
-<div class="row">
+<div class="row-main">
     <!-- Sidebar -->
-    <div class="col-1">
+    <div class="">
         <nav id="sidebar" class="col sidebar">
             <a class="navbar-brand " href="{{ url_for('view.home') }}" style="margin-top: 8px;">
                 <i class="bi bi-lightbulb" data-bs-toggle="tooltip" data-bs-placement="right" title="iTraffic"></i>
@@ -70,7 +70,7 @@
         </nav>
     </div>
     <!-- End Sidebar  -->
-    <div class="main col-11">
+    <div class="main">
         <div class="row">
             <div class="col">
                 <section id="page-head" class="border-bottom">

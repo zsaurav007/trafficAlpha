@@ -1,9 +1,16 @@
 /* globals Chart:false, feather:false */
 lstMap = []
 
-function create_map(id) {
+function create_map(id, options) {
+
+    let cord = [23.7696, 90.3576]
+    if(options.cord){
+        cord = options.cord
+    }
+    console.log(cord)
+
     return L.map(id, {
-        center: [23.7696, 90.3576],
+        center: cord,
         zoom: 19
     });
 }
@@ -16,9 +23,33 @@ function add_tile(map) {
 }
 
 
-function add_marker(map, options) {
+function add_media_marker(map, options){
+    if(options.area_videos){
+        let videos = JSON.parse(options.area_videos)
+        videos.forEach(function (val) {
+            let marker = get_marker(map, {cord:[val.lat, val.lng], icon:options.area_video_icon});
+            marker.addTo(map).bindPopup("Name:"+val.name+" <br>Area: "+val.area);
+        })
 
-    let marker = L.marker([23.7696, 90.3576], {
+
+        let  rtsps = JSON.parse(options.area_rtsp_links)
+        rtsps.forEach(function (val) {
+            let marker = get_marker(map, {cord:[val.lat, val.lng], icon:options.area_rtsp_icon});
+            marker.addTo(map).bindPopup("Name:"+val.name+" <br>Area: "+val.area);
+        })
+
+    }
+}
+
+
+function get_marker(map, options) {
+    let cord = [23.7696, 90.3576]
+    if(options.cord){
+        cord = options.cord
+    }
+    console.log(options.cord)
+
+    let marker = L.marker(cord, {
         draggable: false,
         autoPan: true
     })
@@ -26,6 +57,8 @@ function add_marker(map, options) {
     if (options.icon) {
         marker.setIcon(options.icon);
     }
+
+    console.log(options.icon)
 
     return marker
 }
@@ -82,12 +115,14 @@ function pan_map(map, latlng) {
 }
 
 function addMap(map_id, options, fnc) {
-    let map = create_map(map_id)
+    let map = create_map(map_id, options)
     add_tile(map);
+    if(options.media)
+        add_media_marker(map, options)
     let marker = null
     let noMarkerOption = true
     if(options.icon) {
-        marker = add_marker(map, options);
+        marker = get_marker(map, options);
         noMarkerOption = false
     }
     if (options.isSearchable) {

@@ -3,3 +3,5 @@ pip install SQLAlchemy
 pip install Flask-Navigation
 pip install flask-login
 pip install cryptography
+pip install opencv-python
+pip install scipy
