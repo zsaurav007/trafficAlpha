@@ -3,3 +3,8 @@
 <input type="{{ type }}" name="{{ name }}" class="form-control {{ extra_cls }}" id="{{ id }}"
        placeholder="{{ ph }}">
 {% endmacro %}
+
+
+{% macro no_label_text_field(field_id, extra_cls, label, type, ph, name) %}
+ <input id="{{ field_id }}" name="{{ name }}"  type="{{ type }}" class="form-control {{ extra_cls }}" placeholder="{{ ph }}" aria-label="{{ ph }}">
+{% endmacro %}
