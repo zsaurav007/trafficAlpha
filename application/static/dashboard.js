@@ -4,14 +4,17 @@ lstMap = []
 function create_map(id, options) {
 
     let cord = [23.7696, 90.3576]
-    if(options.cord){
+    if (options.cord) {
         cord = options.cord
     }
-    console.log(cord)
 
     return L.map(id, {
         center: cord,
-        zoom: 19
+        zoom: 17,
+        zoomControl: false,
+        dragging: false,
+        maxZoom: 19,
+        minZoom: 17
     });
 }
 
@@ -23,19 +26,19 @@ function add_tile(map) {
 }
 
 
-function add_media_marker(map, options){
-    if(options.area_videos){
+function add_media_marker(map, options) {
+    if (options.area_videos) {
         let videos = JSON.parse(options.area_videos)
         videos.forEach(function (val) {
-            let marker = get_marker(map, {cord:[val.lat, val.lng], icon:options.area_video_icon});
-            marker.addTo(map).bindPopup("Name:"+val.name+" <br>Area: "+val.area);
+            let marker = get_marker(map, {cord: [val.lat, val.lng], icon: options.area_video_icon});
+            marker.addTo(map).bindPopup("Name:" + val.name + " <br>Area: " + val.area);
         })
 
 
-        let  rtsps = JSON.parse(options.area_rtsp_links)
+        let rtsps = JSON.parse(options.area_rtsp_links)
         rtsps.forEach(function (val) {
-            let marker = get_marker(map, {cord:[val.lat, val.lng], icon:options.area_rtsp_icon});
-            marker.addTo(map).bindPopup("Name:"+val.name+" <br>Area: "+val.area);
+            let marker = get_marker(map, {cord: [val.lat, val.lng], icon: options.area_rtsp_icon});
+            marker.addTo(map).bindPopup("Name:" + val.name + " <br>Area: " + val.area);
         })
 
     }
@@ -44,10 +47,9 @@ function add_media_marker(map, options){
 
 function get_marker(map, options) {
     let cord = [23.7696, 90.3576]
-    if(options.cord){
+    if (options.cord) {
         cord = options.cord
     }
-    console.log(options.cord)
 
     let marker = L.marker(cord, {
         draggable: false,
@@ -58,7 +60,6 @@ function get_marker(map, options) {
         marker.setIcon(options.icon);
     }
 
-    console.log(options.icon)
 
     return marker
 }
@@ -82,12 +83,12 @@ function add_search(map) {
 function execute_call_back(target, latlng, desc) {
     lstMap.every(function (val) {
         if (val.id == target.id) {
-            if(!val.noMarkerOption){
+            if (!val.noMarkerOption) {
 
                 val.marker.addTo(val.map).bindPopup(val.text);
                 //val.marker.setIcon(val.icon)
             }
-            if(val.marker) {
+            if (val.marker) {
                 val.marker.setLatLng(latlng);
             }
             if (val.fnc) {
@@ -117,13 +118,16 @@ function pan_map(map, latlng) {
 function addMap(map_id, options, fnc) {
     let map = create_map(map_id, options)
     add_tile(map);
-    if(options.media)
+    if (options.media)
         add_media_marker(map, options)
     let marker = null
     let noMarkerOption = true
-    if(options.icon) {
+    if (options.icon) {
         marker = get_marker(map, options);
         noMarkerOption = false
+        if (options.visibleMarker) {
+            marker.addTo(map).bindPopup(options.text)
+        }
     }
     if (options.isSearchable) {
         add_search(map);
@@ -146,6 +150,22 @@ function addMap(map_id, options, fnc) {
     })
 
     return map
+}
+
+function del_something(url, obj_type, fnc) {
+    let res = confirm("Do you really want to delete the " + obj_type + "?");
+    if (res) {
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: function (data) {
+                fnc(true, data)
+            },
+            error: function () {
+                alert("Delete failed.")
+            }
+        });
+    }
 }
 
 

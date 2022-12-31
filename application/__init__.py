@@ -18,6 +18,9 @@ UPLOAD_FOLDER = './uploads'
 CLIP_FOLDER = './clips'
 RECORDS_FOLDER = "./records"
 SECRET_KEY = "The World is not Enough"
+SESSION_CLIP_KEY = 'current_clip'
+SESSION_AREA_KEY = 'current_area'
+SESSION_TAB_KEY = 'tab'
 
 kdf = PBKDF2HMAC(
     algorithm=hashes.SHA256(),
@@ -27,7 +30,6 @@ kdf = PBKDF2HMAC(
 )
 key = base64.urlsafe_b64encode(kdf.derive(password))
 fernet = Fernet(key)
-
 
 
 def create_database(app, drop=False, create=False):

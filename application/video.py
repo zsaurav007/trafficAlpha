@@ -9,6 +9,7 @@ import numpy as np
 from scipy.spatial import distance as dist
 from .dal import *
 from .viewmodel import *
+from . import RECORDS_FOLDER, CLIP_FOLDER
 
 video = Blueprint('video', __name__)
 
@@ -21,6 +22,8 @@ CONFIDENCE_THRESHOLD = 0.4
 track_analytics = {
 
 }
+
+is_record_clip = False
 
 
 def build_model(is_cuda):
@@ -78,7 +81,7 @@ def wrap_detection(input_image, output_data):
             classes_scores = row[5:]
             _, _, _, max_indx = cv2.minMaxLoc(classes_scores)
             class_id = max_indx[1]
-            if (classes_scores[class_id] > .25):
+            if classes_scores[class_id] > .25:
                 confidences.append(confidence)
 
                 class_ids.append(class_id)
@@ -120,13 +123,12 @@ is_cuda = len(sys.argv) > 1 and sys.argv[1] == "cuda"
 net = build_model(is_cuda)
 
 
-
 def is_in_saved(saved_items, box):
-    cx = (box[0] + box[2])/2
-    cy = (box[1] + box[3])/2
+    cx = (box[0] + box[2]) / 2
+    cy = (box[1] + box[3]) / 2
     min_dist = 5
     for item in saved_items:
-        d = dist.euclidean([cx, cy], [ (item[0] + item[2])/2, (item[1] + item[3])/2 ])
+        d = dist.euclidean([cx, cy], [(item[0] + item[2]) / 2, (item[1] + item[3]) / 2])
         if min_dist > d:
             return True
     return False
@@ -137,6 +139,11 @@ def gen_frames(capture, clip_id, playonly=0, sess=None):
     frame_count = 0
     actual_frame_count = 0
     saved_items = []
+    global is_record_clip
+    frame_folder = "{}/{}".format(RECORDS_FOLDER, clip_id)
+    frame_file_name = "{}/frame_{}_{}.jpg"
+    if not os.path.exists(frame_folder):
+        os.mkdir(frame_folder)
     saved_boxes = []
     num_stationary = 0
     avg_speed = 0
@@ -223,12 +230,8 @@ def gen_frames(capture, clip_id, playonly=0, sess=None):
                 cv2.putText(frame, "{} - {}".format(class_list[classid], current_id), (box[0], box[1] - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 0))
 
-
             if frame_count >= 30:
-                end = time.time_ns()
-                fps = 1000000000 * frame_count / (end - start)
                 frame_count = 0
-                start = time.time_ns()
             avg_speed = speed_sum / speed_count if speed_count > 0 else 1
             incident_prob = round(sum(nearMiss) * 100 / (len(nearMiss) + 1))
             accident_prob = round(incident_prob / 10)
@@ -239,14 +242,18 @@ def gen_frames(capture, clip_id, playonly=0, sess=None):
             sess['stationary_object'] = len(boxes) - speed_count
 
             actual_frame_count = actual_frame_count + 1
-            # if is_record_clip:
-            # ffn = frame_file_name.format(frame_folder, clip_id, actual_frame_count)
-            # suc = cv2.imwrite(ffn, frame)
+            if is_record_clip:
+                ffn = frame_file_name.format(frame_folder, clip_id, actual_frame_count)
+                cv2.imwrite(ffn, frame)
 
         ret1, buffer1 = cv2.imencode('.jpg', frame)
         myFrame = buffer1.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + myFrame + b'\r\n')
+        try:
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + myFrame + b'\r\n')
+        except GeneratorExit:
+            is_record_clip = False
+            return
 
 
 @video.route('/video-data')
@@ -257,7 +264,7 @@ def analytics_data():
         from .view import decode_int
         vid = decode_int(vid)
     global track_analytics
-    if not track_analytics[vid]:
+    if vid not in track_analytics:
         track_analytics[vid] = {}
     return jsonify(track_analytics[vid])
 
@@ -280,33 +287,102 @@ def video_feed():
     }
     global track_analytics
     track_analytics[vid] = sess
+
     return Response(gen_frames(capture, vid, playonly=play_only, sess=sess),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @video.route('/start-record-clip')
+@login_required
 def start_record_clip():
-    pass
+    global is_record_clip
+    is_record_clip = True
+    return jsonify({'success': True})
 
 
 @video.route('/stop-record-clip')
+@login_required
 def stop_record_clip():
-    pass
+    global is_record_clip
+    prev_state = is_record_clip
+    is_record_clip = False
+    return jsonify({'success': True, 'prev_state': prev_state})
 
 
 @video.route('/is-recording')
+@login_required
 def is_video_recoding():
-    pass
+    global is_record_clip
+    return jsonify({'success': is_record_clip})
 
 
 @video.route('/create-clip', methods=['POST'])
+@login_required
 def create_video():
-    pass
+    if request.method == 'POST':
+        vid = request.form.get('vid')
+        if vid is None:
+            return jsonify({"success": False})
+        else:
+            from .view import decode_int
+            vid = decode_int(vid)
+        img_array = []
+        frame_dir = '{}/{}'.format(RECORDS_FOLDER, vid)
+        import glob
+        files = glob.glob("{}/*.jpg".format(frame_dir))
+        files = sorted(files, key=os.path.getmtime)
+        size = ()
+        for filename in files:
+            img = cv2.imread(filename)
+            height, width, layers = img.shape
+            size = (width, height)
+            img_array.append(img)
+        import random
+        rand_value = random.randint(1, 10000)
+        only_file_name = "clip-{}".format(rand_value)
+        video_file_name = '{}/clip_{}_{}_.avi'.format(CLIP_FOLDER, vid, rand_value)
+        out = cv2.VideoWriter(video_file_name,
+                              cv2.VideoWriter_fourcc(*'DIVX'), 30, size)
+        for i in range(len(img_array)):
+            out.write(img_array[i])
+        out.release()
+        for filename in files:
+            os.remove(filename)
+        os.rmdir(frame_dir)
+        med = get_media_by_id(vid)
+        if med:
+            res = add_media(name="Stream-{}-{}".format(med.name, only_file_name),
+                            path=video_file_name,
+                            area_id=med.area_id,
+                            media_type=StreamType.clip,
+                            lat=med.lat,
+                            long=med.long)
+            if res:
+                return jsonify({"success": True})
+    return jsonify({"success": False})
 
 
 @video.route('/check-camera', methods=['GET'])
+@login_required
 def check_camera():
-    pass
+    result = False
+    vid = request.args.get('vid')
+    if vid:
+        from .view import decode_int
+        vid = decode_int(vid)
+    else:
+        return jsonify({"camera_stat": result})
+
+    my_video = get_media_by_id(vid)
+    capture = load_capture(my_video.path)
+
+    while True:
+        _, frame = capture.read()
+        if frame is not None:
+            result = True
+            break
+        break
+    return jsonify({"camera_stat": result})
 
 
 @video.route('/analytics', methods=['GET'])
@@ -326,7 +402,25 @@ def analytics():
 @video.route('/clips', methods=['GET'])
 @login_required
 def clips():
-    return render_template("video.html", media_name="Dummy Clip", area_name="Dhaka", media=None)
+    medias = get_all_media_by_type(StreamType.clip)
+    medias = format_media_list(medias)
+    from . import SESSION_CLIP_KEY
+    clip_id = session.get(SESSION_CLIP_KEY)
+    media = None
+    if clip_id:
+        media = get_media_by_id(clip_id)
+        media = format_media(media)
+    return render_template("clip.html", media=media, medias=medias)
+
+
+@video.route('/current-clip')
+@login_required
+def current_clip():
+    from .view import decode_int
+    clip_id = decode_int(request.args.get('clip_id'))
+    from . import SESSION_CLIP_KEY
+    session[SESSION_CLIP_KEY] = clip_id
+    return jsonify({'success': True})
 
 
 @video.route('/live', methods=['GET'])
@@ -340,4 +434,4 @@ def play_video():
         media = get_media_by_id(vid)
         media = format_media(media)
 
-    return render_template("video.html", media=media)
+    return render_template("video.html", media=media, record_clip=True)

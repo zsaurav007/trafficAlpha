@@ -7,8 +7,8 @@ Home
 {% block pagehead %}
 <h5><i class="bi bi-{{  vars['page-icon'] }}"></i> Home
     {% if selected_area is not none %}
-- {{ selected_area.name }}
-{% endif %}
+    - {{ selected_area.name }}
+    {% endif %}
 </h5>
 {% endblock %}
 {% block content %}
@@ -26,9 +26,17 @@ Home
                     <h6>RTSP Link</h6>
                     <ul class="list-group">
                         {% for item in selected_area.rtsp_links %}
-                        <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
+                        <li id="rtsp-links"
+                            class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
                             {{ item.name }}
-                            <a href="link" class="text-end flex-end"><i class="bi bi-webcam"></i></a>
+                            <a data-link="{{ url_for('video.play_video') }}?vid={{ item.id }}" href=""
+                               class="text-end flex-end cam-{{ item.id }}" rel="{{item.id}}" style="position: relative">
+                                <div class="spinner spinner-grow spinner-grow-sm text-danger" role="status"
+                                     style="position: absolute; ">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <i class="bi bi-webcam"></i>
+                            </a>
                         </li>
                         {% endfor %}
                     </ul>
@@ -41,7 +49,8 @@ Home
                         {% for item in selected_area.videos %}
                         <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
                             {{ item.name }}
-                            <a href="link" class="text-end flex-video"><i class="bi bi-file-earmark-play"></i></a>
+                            <a href="{{ url_for('video.analytics') }}?vid={{ item.id }}" class="text-end flex-video"><i
+                                    class="bi bi-file-earmark-play"></i></a>
                         </li>
                         {% endfor %}
                     </ul>
@@ -79,13 +88,30 @@ Home
         </div>
     </div>
 </section>
+
 {% endblock %}
 {% block page_script %}
+
 <script type="text/javascript">
 
     let map = null;
 
     $(document).ready(function () {
+        $("#rtsp-links a").each(function (index, obj) {
+            let obj_id = $(obj).attr("rel")
+            $.get("{{ url_for('video.check_camera') }}?vid=" + obj_id, function (data, status) {
+                if (data['camera_stat'] == false) {
+                    $(obj).addClass("text-danger");
+                    $(obj).find('.spinner').css('display', 'none');
+                } else {
+                    $(obj).addClass("text-success");
+                    $(obj).find('.spinner').css('display', 'none');
+                    $(obj).attr('href', $(obj).attr('data-link'))
+                }
+            })
+        });
+
+
         if (drawMap)
             if (map == null) {
                 let options = {
@@ -98,7 +124,6 @@ Home
                     area_rtsp_icon: rtspIcon,
                     media: true
                 }
-                console.log(options)
                 map = addMap("map", options);
             }
 
@@ -112,10 +137,7 @@ Home
             })
         });
 
-        console.log($('#area-table'))
-
-        if($('#area-table'))
-            $('#area-table').DataTable({scrollX: true})
+        $('#area-table').DataTable()
     });
 </script>
 {% endblock %}

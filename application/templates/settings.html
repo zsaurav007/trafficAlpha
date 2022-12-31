@@ -121,7 +121,7 @@
             }
 
             if (lat && lng) {
-                map1.panTo([lng, lat]);
+                pan_map(map1, [lng, lat])
             }
         });
         $("#exampleModal1").on('shown.bs.modal', function () {
@@ -133,8 +133,8 @@
                     text: "Recorded video"
                 }
                 map2 = addMap("map2", options, function (latlng) {
-                    $("input[name='rtsp_lat']").val(latlng.lat)
-                    $("input[name='rtsp_long']").val(latlng.lng)
+                    $("input[name='video_lat']").val(latlng.lat)
+                    $("input[name='video_long']").val(latlng.lng)
                 })
             }
             if (lat && lng) {
@@ -192,6 +192,28 @@
                 lng = $(this).attr('data-long')
             });
             pan_map(map2, [lng, lat]);
+        });
+
+
+
+        $(".del-area-link").click(function () {
+            let obj_id = $(this).attr('rel');
+            let url = '{{  url_for("view.del_area") }}?area_id='+obj_id;
+            let obj_type = 'area';
+            del_something(url, obj_type, function (status, data) {
+                window.location = window.location
+            });
+            //window.location = window.location
+        });
+
+        $(".del-media-link").click(function () {
+            let obj_id = $(this).attr('rel');
+            let url = '{{  url_for("view.del_media") }}?media_id='+obj_id;
+            let obj_type = 'area';
+            del_something(url, obj_type, function (status, data){
+                window.location = window.location
+            });
+
         });
     })
 

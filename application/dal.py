@@ -1,3 +1,5 @@
+import os
+
 from werkzeug.security import generate_password_hash
 from flask_login import current_user
 
@@ -74,3 +76,41 @@ def add_media(name, path, media_type, area_id, lat, long):
         except:
             db.session.rollback()
     return result
+
+
+def del_area_by_id(area_id):
+    result = True
+    area = Area.query.filter_by(id=area_id).first()
+    medias = area.medias
+    for item in medias:
+        del_media(item)
+    try:
+        if result:
+            db.session.delete(area)
+            db.session.commit()
+    except:
+        db.session.rollback()
+        result = False
+    return result
+
+
+def del_media(media):
+    result = True
+    if media:
+        try:
+            path = None
+            if media.media_type == StreamType.video or media.media_type == StreamType.clip:
+                path = media.path
+            db.session.delete(media)
+            db.session.commit()
+            if path:
+                os.remove(path)
+        except:
+            db.session.rollback()
+            result = False
+    return result
+
+
+def del_media_by_id(media_id):
+    media = Media.query.filter_by(id=media_id).first()
+    return del_media(media)

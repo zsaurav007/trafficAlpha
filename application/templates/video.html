@@ -9,69 +9,94 @@
     {% endif %}
 </h5>
 {% endblock %}
+{% block pagetab %}
+{% if media and record_clip %}
+<div class="d-flex justify-content-end">
+    <a id="record-button" href="#" class="text-success fs-2" data-bs-toggle="tooltip" data-bs-placement="left"
+       title="Record"><i class="bi bi-record-btn-fill"></i></a></div>
+{% endif %}
+{% endblock %}
 {% block content %}
 {% if media  %}
 <div class="row">
     <div class="col-9">
         <div class="card">
-            <div class="card-body">
+            <div style="position: relative"
+                 class="card-body p-0 bg-secondary justify-content-center align-items-center d-flex">
+                <div class="vid-for-record d-flex justify-content-center align-items-center"
+                     style="position: absolute; width: 100%; height: 100%; visibility: hidden">
+                    <button id="record-button-center" class="rec">recording</button>
+                </div>
                 <img style="width: 100%;" class="p-1 img img-fluid"
                      src="{{ url_for('video.video_feed') }}?vid={{ media.id }}">
             </div>
         </div>
     </div>
     <div class="col-3">
-        <div class="card">
-            <div class="card-body">
+        <div class="">
+            <div class="">
                 <div class="bike-card vehi-card card">
                     <div class="card-body d-flex flex-column fs-4">
                         <h6>Vehicles</h6>
                         <ul class="list-group">
                             <li class="list-group-item rounded-0">
                                 <div class="row justify-content-between align-items-center">
-                                    <div class="col"><i class="bi bi-bicycle"></i></div>
+                                    <div class="col">
+                                        <img class="img-fluid fifty-img"
+                                             src="{{ url_for('static', filename='images/bike.svg') }}">
+                                    </div>
                                     <div class="col text-end" id="bike-count"></div>
-                                    <div class="col text-end vehi-label text-primary fst-italic fs-6">Bike (s)</div>
                                 </div>
                             </li>
                             <li class="list-group-item rounded-0">
                                 <div class="row justify-content-between align-items-center">
-                                    <div class="col"><i class="bi bi-ev-front"></i></div>
+                                    <div class="col">
+                                        <img class="img-fluid fifty-img"
+                                             src="{{ url_for('static', filename='images/car.svg') }}">
+
+                                    </div>
                                     <div class="col text-end" id="light-count"></div>
-                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Light (s)</div>
+
                                 </div>
                             </li>
                             <li class="list-group-item rounded-0">
                                 <div class="row justify-content-between align-items-center">
-                                    <div class="col"><i class="bi bi-truck-front"></i></div>
+                                    <div class="col">
+                                        <img class="img-fluid fifty-img"
+                                             src="{{ url_for('static', filename='images/medium.svg') }}">
+
+                                    </div>
                                     <div class="col text-end" id="median-count"></div>
-                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Medium (s)</div>
+
                                 </div>
                             </li>
                             <li class="list-group-item rounded-0">
                                 <div class="row justify-content-between align-items-center">
-                                    <div class="col"><i class="bi bi-bus-front"></i></div>
+                                    <div class="col">
+                                        <img class="img-fluid fifty-img"
+                                             src="{{ url_for('static', filename='images/heavy.svg') }}">
+
+                                    </div>
                                     <div class="col text-end" id="heavy-count"></div>
-                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Heavies (s)</div>
+
                                 </div>
                             </li>
+
+                        </ul>
+                        <h6 class="mt-1">Analytics</h6>
+                        <ul class="list-group">
                             <li class="list-group-item rounded-0 ">
                                 <div class="row justify-content-between align-items-center">
                                     <div class="col"><i class="bi bi-speedometer"></i></div>
-                                    <div class="col text-end" id="avg-speed"></div>
-                                    <div class="col text-end vehi-label text-primary fst-italic fs-6">Km/Hr</div>
+                                    <div class="col text-end"><span id="avg-speed"></span>Km/Hr</div>
                                 </div>
                             </li>
                             <li class="list-group-item rounded-0">
                                 <div class="row justify-content-between align-items-center">
                                     <div class="col"><i class="bi bi-sign-stop"></i></div>
                                     <div class="col text-end" id="stationary"></div>
-                                    <div class="col text-end vehi-label text-primary fst-italic fs-6 text-truncate">Stationary (s)</div>
                                 </div>
                             </li>
-                        </ul>
-                        <h6>Prediction</h6>
-                        <ul class="list-group">
                             <li class="list-group-item rounded-0 d-flex justify-content-between align-items-center">
                                 <i class="bi bi-info-circle"></i>
                                 <span id="incident-prob">10</span>
@@ -114,6 +139,36 @@
 <script type="text/javascript">
     let incident_data = 0
     let accident_data = 0
+
+    function start_recording() {
+        $.get("{{ url_for('video.start_record_clip') }}", function (recData, status) {
+            if (recData['success'] == true) {
+                $("#record-button").removeClass("text-success");
+                $("#record-button").addClass("text-danger");
+                $("#record-button span").removeClass("vid-rec")
+                $("#record-button span").addClass("vid-rec-stop")
+            }
+        })
+    }
+
+    function stop_recording() {
+        $.get("{{ url_for('video.stop_record_clip') }}", function (recData, status) {
+            if (recData['success'] == true) {
+                $("#record-button").addClass("text-success");
+                $("#record-button").removeClass("text-danger");
+                $("#record-button span").addClass("vid-rec")
+                $("#record-button span").removeClass("vid-rec-stop")
+            }
+
+            if (recData['prev_state'] == true) {
+                $.post("{{url_for('video.create_video')}}", {
+                    vid: "{{ media.id }}"
+                });
+            }
+        })
+    }
+
+
     $(document).ready(function () {
         let iv = setInterval(function () {
             $.get("{{ url_for('video.analytics_data') }}?vid={{media.id}}", function (data, status) {
@@ -127,7 +182,7 @@
                     $("#avg-speed").text(Math.round(data['avg_speed'], 2))
                     $("#stationary").text(data['stationary_object'])
                     $("#incident-prob").text(data['incident_prob'] + " %")
-                    $("#accident-prob").text(data['accident_prob']+ " %")
+                    $("#accident-prob").text(data['accident_prob'] + " %")
                     if (data['incident_prob'] > 50)
                         $("#prediction").html("<span class='text-danger'>Not Safe</span>")
                     else
@@ -190,7 +245,25 @@
                 }
             }
         });
+        $(".vid-for-record").css("visibility", 'hidden');
+        $("#record-button, #record-button-center").click(function () {
+            $.get("{{ url_for('video.is_video_recoding') }}", function (data, status) {
+                if (data['success'] == false) {
+                    $(".vid-for-record").css("visibility", 'visible');
+                    start_recording();
+                } else {
+                    $(".vid-for-record").css("visibility", 'hidden');
+                    stop_recording();
+                }
+            });
+        });
 
+
+    });
+
+    window.addEventListener("beforeunload", function (event) {
+        window.alert("You may have unsaved change..")
+        event.returnValue = null;
     });
 </script>
 {% endif %}

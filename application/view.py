@@ -24,7 +24,8 @@ def decode_int(val):
 @login_required
 def home():
     area_models = get_all_areas()
-    current_area_id = session.get('current_area')
+    from . import SESSION_AREA_KEY
+    current_area_id = session.get(SESSION_AREA_KEY)
     areas, selected_area = format_area_list(area_models, current_area_id)
 
     return render_template("home.html", current_user=current_user, areas=areas, selected_area=selected_area)
@@ -48,7 +49,8 @@ def settings():
 @login_required
 def current_area():
     area_id = decode_int(request.args.get('area_id'))
-    session['current_area'] = area_id
+    from . import SESSION_AREA_KEY
+    session[SESSION_AREA_KEY] = area_id
     return jsonify({'success': True})
 
 
@@ -157,3 +159,29 @@ def settings_upload_video():
             else:
                 flash("Video uploaded successfully!", category='success')
     return redirect(url_for('view.settings'))
+
+
+@view.route('/del-area', methods=['DELETE'])
+@login_required
+def del_area():
+    if request.method == 'DELETE':
+        area_id = decode_int(request.args.get('area_id'))
+        if area_id and del_area_by_id(area_id):
+            from . import SESSION_AREA_KEY
+            if session[SESSION_AREA_KEY] == area_id:
+                session.pop(SESSION_AREA_KEY)
+            return "OK!"
+        return "NOT OK!", 404
+
+
+@view.route('/del-media', methods=['DELETE'])
+@login_required
+def del_media():
+    if request.method == 'DELETE':
+        media_id = decode_int(request.args.get('media_id'))
+        if media_id and del_media_by_id(media_id):
+            from . import SESSION_CLIP_KEY
+            if session[SESSION_CLIP_KEY] == media_id:
+                session.pop(SESSION_CLIP_KEY)
+            return "OK!"
+        return "NOT OK!", 404
